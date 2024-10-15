@@ -36,3 +36,4 @@ composer.json
 composer.lock
 README.md
 vite.config.js
+/public/.htaccess

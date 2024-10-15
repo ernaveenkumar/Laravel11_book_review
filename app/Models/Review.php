@@ -9,6 +9,7 @@ class Review extends Model
 {
 
     use HasFactory;
+    protected $fillable = ['review', 'rating'];
     //Creating relation with Base Table Book
     public function book(){
 
