@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\Builder as QueryBulder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -21,7 +21,7 @@ class Book extends Model
 
     //Local query scope
 
-    public function scopeTitle(Builder $query, string $title):Builder | QueryBulder{
+    public function scopeTitle(Builder $query, string $title):Builder{
 
         return $query->where('title', 'LIKE', '%' . $title . '%');
 
@@ -53,14 +53,30 @@ class Book extends Model
 
     //OR
 
-    public function scopePopular(Builder $query, $from = null, $to = null):Builder | QueryBulder{
+    //From command promt
+    //\App\Models\Book::popular('2023-01-01', '2023-03-30')->get();
+    public function scopePopular(Builder $query, $from = null, $to = null):Builder | QueryBuilder{
+
+        // return $query->withCount('reviews')
+        // ->orderBy('reviews_count', 'desc');
 
         return $query->withCount([
+            //arrow function filter those reviews further
+            //If we use full name like function instead of fn then we have to use
+            // `use` to access $from and $to from parent function
+            //this is clouser.
+
+            //There is limitation of arrow function, that you can only have one  line expression and you need not to use `use` to access the parent variables like parameters.
             'reviews' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)
-        ])->orderBy('reviews_count',' desc');
+        ])->orderBy('reviews_count','desc');
     }
 
-    public function scopeHighestRated(Builder $query, $from = null, $to = null){
+
+    public function scopeHighestRated(Builder $query, $from = null, $to = null):Builder | QueryBuilder{
+
+        // return $query->withAvg('reviews', 'rating')
+        // ->orderBy('reviews_avg_rating', 'desc');
+
         return $query->withAvg([
             'reviews' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)
         ],'rating')->orderBy('reviews_avg_rating', 'desc');
@@ -71,18 +87,18 @@ class Book extends Model
 
         if($from && !$to){
 
-            $query->where('created_at', '>=', $from);
+            $query->where('created_at', '>=', $from)->orderBy('created_at', 'desc');
 
         }elseif(!$from && $to){
 
-            $query->where('created_at', '<=', $to);
+            $query->where('created_at', '<=', $to)->orderBy('created_at', 'desc');
 
         }elseif($from && $to){
-            $query->whereBetween('created_at',[$from, $to]);
+            $query->whereBetween('created_at',[$from, $to])->orderBy('created_at', 'desc');
         }
     }
 
-    public function scopeMinReviews(Builder $query, int $minReviews):Builder{
+    public function scopeMinReviews(Builder $query, int $minReviews):Builder | QueryBuilder{
 
         return $query->having('reviews_count', '>=' , $minReviews);
     }
