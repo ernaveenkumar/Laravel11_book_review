@@ -54,7 +54,6 @@
       </div>
       <div>
         <div class="book-rating">
-          3.5
           {{ number_format($book->reviews_avg_rating, 1) }}
         </div>
         <div class="book-review-count">
